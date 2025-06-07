@@ -90,3 +90,11 @@ def create_select_treeview(tk_tree, name, list_names, frame):
     scrollbar = Scrollbar(frame, command=tk_tree.yview)
     scrollbar.grid(row=1, column=2, sticky="ns")
     tk_tree.configure(yscrollcommand=scrollbar.set)
+
+
+def login_callback(username, password):
+    """Placeholder for login callback function."""
+    # Implement your login logic here
+    if username == "admin" and password == "password":
+        return True
+    return False
