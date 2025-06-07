@@ -14,10 +14,15 @@ db_folder = os.path.join(os.getenv("APPDATA"), "RedRex")
 os.makedirs(db_folder, exist_ok=True)  # Ensure the folder exists
 db_path = os.path.join(db_folder, "redrex.db")
 
+# sqlite:///Z:/RedRex/redrex.db                                             - SQLite Connection String
+# 'mysql+pymysql://redrex:Sep2020135838!@192.168.254.109:3306/redrex'       - MySQL Connection String
 
 # Initialize App
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///redrex.db'  # Set Path where database will be saved
+# app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://redrex:Sep2020135838!@192.168.254.109:3306/redrex'  # Set Path where database will be saved
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///redrex.db'  # SQLite Connection String
+
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'  # Set Path where database will be saved
 app.config['SQLALCHEMY_POOL_SIZE'] = 10                         # Max 10 connections in pool
 app.config['SQLALCHEMY_MAX_OVERFLOW'] = 20                      # Allow 20 extra temporary connections
@@ -192,6 +197,18 @@ class Collection(db.Model):
 
     sales = relationship("Sales", back_populates="collection")
     customer = relationship("Customer", back_populates="collection")
+
+
+class User(db.Model):
+    __tablename__ = "user"
+
+    id: Mapped[int] = mapped_column(String(30), primary_key=True)
+    username: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(250), nullable=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)               # e.g., 'admin', 'user'
+
+    def __repr__(self):
+        return f"<User - {self.username}>"
 
 
 with app.app_context():

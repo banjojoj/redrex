@@ -1,7 +1,7 @@
 from customtkinter import CTkFrame, set_appearance_mode, set_default_color_theme, CTk
 from gui.sidebar import Sidebar
 from gui import product_view, customer_view, supplier_view, sales_view, purchases_view, collection_view
-from gui.create import create_new_sale, create_new_purchase
+from gui.create import create_new_sale, create_new_purchase, create_new_coll
 from models import app, db
 
 # Set Themes for Application
@@ -34,6 +34,7 @@ class App(CTk):
 
         s_view = sales_view.SalesView(view_container, show_view=self.show_view)
         p_view = purchases_view.PurchasesView(view_container, show_view=self.show_view)
+        c_view = collection_view.CollectionView(view_container, show_view=self.show_view)
         self.views = {
             "ProductView": product_view.ProductView(view_container),
             "CustomerView": customer_view.CustomerView(view_container),
@@ -42,7 +43,8 @@ class App(CTk):
             "CreateNewSale": create_new_sale.CreateNewSale(view_container, show_view=self.show_view, s_view=s_view),
             "PurchasesView": p_view,
             "CreateNewPurchase": create_new_purchase.CreateNewPurchase(view_container, show_view=self.show_view, p_view=p_view),
-            "CollectionView": collection_view.CollectionView(view_container)
+            "CollectionView": c_view,
+            "CreateNewCollection": create_new_coll.CreateNewCollection(view_container, show_view=self.show_view, c_view=c_view)
         }
 
         # Show all views initially

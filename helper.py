@@ -47,6 +47,17 @@ def compute_tree_total(tk_tree, total_label: customtkinter.CTkLabel):
     total_label.configure(text=f"Total: ${"{:,.2f}".format(total)}")
 
 
+def compute_coll_total(tk_tree, total_label):
+    """Function to compute total collections"""
+    total = 0.0
+
+    for coll in tk_tree.get_children():
+        row = tk_tree.item(coll, "values")
+        total += float(row[-1])
+
+    total_label.configure(text=f"Total: ${"{:,.2f}".format(total)}")
+
+
 def create_labeled_entry(master, label, row, column, width=145, entry_type="entry", **kwargs):
     """Function to dynamically create entries"""
     # Create Label

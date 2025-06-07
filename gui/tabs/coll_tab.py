@@ -1,7 +1,5 @@
-from customtkinter import CTkTabview, CTkEntry, CTkLabel, CTkComboBox, CTkButton, END
-from controller import prod_ctrl
-from tkinter import messagebox
-from uuid import uuid4
+from customtkinter import CTkTabview, CTkFrame, CTkButton
+from datetime import datetime
 import helper
 
 
@@ -21,48 +19,79 @@ class CollectionTabView(CTkTabview):
 
         # Add Tabs
         table_tab = self.add("Table")
-        create_tab = self.add("Create")
 
         # Initialize Table Tab
-        self.search = CTkEntry(master=table_tab, width=305, placeholder_text="Search Customer...",
-                               border_color="#99BC85", border_width=2)
-        self.search.bind("<KeyRelease>", self.search_callback)
-        self.search.pack(side="left", padx=(13, 0), pady=15)
+        t_first_row = CTkFrame(table_tab, fg_color="transparent")
+        t_first_row.pack(fill="x", expand=True)
 
-        # Initialize Create Tab
-        self.date_label, self.date_entry = helper.create_labeled_entry(master=create_tab, label="Date:", row=0, column=0, width=120)
-        self.customer_label, self.customer_entry = helper.create_labeled_entry(master=create_tab, label="Customer:", row=0, column=2, width=305)
-        self.amt_label, self.amt_entry = helper.create_labeled_entry(master=create_tab, label="Amount:", row=0, column=4, width=120)
-        self.remarks_label, self.remarks_entry = helper.create_labeled_entry(master=create_tab, entry_type="combo", values=["CASH", "CHECK"], label="Remarks:", row=0, column=6, width=120)
-        self.bank_label, self.bank_entry = helper.create_labeled_entry(master=create_tab, label="Bank Type:", row=0, column=8, width=120)
+        self.search_label, self.search_entry = helper.create_labeled_entry(master=t_first_row, label="Search DR/SI:", row=0, column=0, width=305)
+        self.search_entry.bind("<Return>", self.filter)
+        self.search_entry.bind("<KeyRelease>", self.check_search)
+        self.search_button = CTkButton(master=t_first_row, text="Search", fg_color="green", hover_color="#207244", font=("Arial Bold", 12), width=20, command=lambda: self.filter(None))
+        self.search_button.grid(row=0, column=3)
 
-        self.check_no_label, self.check_no_entry = helper.create_labeled_entry(master=create_tab, label="Check No:", row=1, column=0, width=120)
-        self.check_date_label, self.check_date_entry = helper.create_labeled_entry(master=create_tab, label="Check Date:", row=1, column=2, width=120)
-        self.drsi_label, self.drsi_entry = helper.create_labeled_entry(master=create_tab, label="DR/SI No:", row=1, column=4, width=120)
+        t_second_row = CTkFrame(table_tab, fg_color="transparent")
+        t_second_row.pack(fill="x", expand=True)
 
-        # Add Button
-        self.add_product_button = CTkButton(master=create_tab, text="Submit", fg_color="green", hover_color="#207244", font=("Arial Bold", 15))
-        self.add_product_button.grid(row=1, column=9, sticky="w", padx=15, pady=(0, 5))
+        year_options = ["All", "2023", "2024", "2025"]
+        self.year_label, self.year_filter = helper.create_labeled_entry(master=t_second_row, label="Year:", row=0, column=0, entry_type="combo", values=year_options, command=self.filter)
+        month_options = ["All", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        self.month_label, self.month_filter = helper.create_labeled_entry(master=t_second_row, label="Month:", row=0, column=2, entry_type="combo", values=month_options, command=self.filter)
+        status_options = ["All", "Ordered", "Posted", "Paid"]
+        self.status_filter_label, self.status_filter = helper.create_labeled_entry(master=t_second_row, label="Status:", row=0, column=4, entry_type="combo", values=status_options, command=self.filter)
 
         # Get Treeview from Master
+        self.tree = master.tree
         self.tk_tree = master.tree.treeview
         self.all_rows = master.all_rows
 
-    def search_callback(self, _):
-        search_value = self.search.get().strip().lower()  # Normalize input for case-insensitive search
+    def filter(self, _):
+        """Function to apply multiple filters to Treeview"""
+        # Get All Filters
+        year = self.year_filter.get()
+        month = self.month_filter.get()
+        status = self.status_filter.get()
+        search = self.search_entry.get()
 
-        # Clear existing Treeview data
+        month_dict = {"Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
+                      "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
+
+        # Show all reports if filtering "All"
+        if year == "All" and month == "All" and status == "All" and search == "":
+            self.tree.show_collections()
+            return
+
+        # Refresh Treeview
         self.tk_tree.delete(*self.tk_tree.get_children())
+        self.tree.show_collections()
 
-        # Filter rows based on search
-        filtered_rows = []
+        # Filter
+        rows = []
         for item in self.all_rows:
             for key, value in item.items():
-                if search_value in str(value[1]).lower():
-                    filtered_rows.append(item)
+                matches_search = (search == "" or str(search) in str(value[2]))
+                matches_year = (year == "All" or datetime.strptime(value[0], "%m/%d/%Y").year == int(year))
+                matches_month = (month == "All" or value[0].split('/')[0] == month_dict.get(month))
+                matches_status = (status == "All" or value[-1] == status)
 
-        # Manually Repopulate the tree with filtered data
-        for index, item in enumerate(filtered_rows):  # Get index and dictionary
-            for key, value in item.items():  # Get key value pair inside dictionary
-                tag = "evenrow" if index % 2 == 0 else "oddrow"
-                self.tk_tree.insert("", "end", iid=key, values=value, tags=(tag,))
+                if matches_search and matches_year and matches_month and matches_status:
+                    rows.append(item)
+
+        # Show Rows
+        self.tk_tree.delete(*self.tk_tree.get_children())
+        for i, row in enumerate(rows):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
+            for iid, data in row.items():
+                self.tk_tree.insert(parent='', index='end', iid=iid, values=data, tags=(tag,))
+
+        # Compute Total
+        if hasattr(self.master, 'total_label'):
+            helper.compute_coll_total(self.tk_tree, self.master.total_label)
+
+    def check_search(self, _):
+        if not self.search_entry.get().strip():
+            # Refresh Treeview
+            self.tk_tree.delete(*self.tk_tree.get_children())
+            self.tree.show_collections()
+            # Call Filter
+            self.filter(None)

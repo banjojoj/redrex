@@ -16,6 +16,7 @@ class SalesTabView(CTkTabview):
 
         # Add Tabs
         self.table_tab = self.add("Table")
+
         # Initialize Table Tab
         t_first_row = CTkFrame(self.table_tab, fg_color="transparent")
         t_first_row.pack(fill="x", expand=True)
@@ -51,6 +52,7 @@ class SalesTabView(CTkTabview):
 
         month_dict = {"Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
                       "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
+
         # Show all reports if filtering "All"
         if year == "All" and month == "All" and status == "All" and search == "":
             self.tree.show_sales()

@@ -4,6 +4,26 @@ from datetime import datetime
 
 
 # ---------- CREATE ----------
+def create_collection(iid, date, customer_name, dr_si_no, amount, remarks, bank_type, check_no, check_date, sales_id, customer_id):
+    """Create a new collection entry"""
+    with app.app_context():
+        new_collection = Collection(
+            id=iid,
+            date=date,
+            customer_name=customer_name,
+            dr_si_no=dr_si_no,
+            amount=amount,
+            remarks=remarks,
+            bank_type=bank_type,
+            check_no=check_no,
+            check_date=check_date,
+            sales_id=sales_id,
+            customer_id=customer_id
+        )
+        db.session.add(new_collection)
+        db.session.commit()
+
+
 # ---------- READ ----------
 def get_all_collections():
     with app.app_context():

@@ -40,6 +40,14 @@ def update_sales_total(iid, total):
         db.session.commit()
 
 
+def update_sales_status(dr_si_no, status):
+    """Update Sales Status"""
+    with app.app_context():
+        sale = db.session.query(Sales).filter(Sales.dr_si_no == dr_si_no).first()
+        sale.status = status
+        db.session.commit()
+
+
 # ---------- READ ----------
 def get_all_sales():
     """Return List of Dictionaries"""
@@ -58,10 +66,21 @@ def get_sales_rows():
         return row_sorted
 
 
-def get_sales_id(dr_si_no, date):
+def get_sales_id(dr_si_no, date=None):
     with app.app_context():
+        if not date:
+            sales = db.session.query(Sales).filter(Sales.dr_si_no == dr_si_no).first()
+            return sales.id
         sales = db.session.query(Sales).filter(Sales.dr_si_no == dr_si_no, Sales.date == date).first()
         return sales.id
+
+
+def get_drsi_values():
+    """Returns List of DR/SI Values"""
+    with app.app_context():
+        sales = db.session.query(Sales).all()
+        drsi_values = [sale.dr_si_no for sale in sales if sale.status != "Paid"]
+        return drsi_values
 
 
 def get_sales_details(dr_si_no):

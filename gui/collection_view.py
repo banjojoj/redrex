@@ -1,13 +1,12 @@
-from customtkinter import CTkFrame, CTkLabel, CTkComboBox, END
+from customtkinter import CTkFrame, CTkLabel, CTkButton
 from gui.treeview import Treeview
 from gui.tabs.coll_tab import CollectionTabView
 from tkinter import Menu
-from controller import prod_ctrl
 import helper
 
 
 class CollectionView(CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, show_view):
         super().__init__(master)
         self.configure(fg_color="#fff", corner_radius=0)
 
@@ -27,6 +26,9 @@ class CollectionView(CTkFrame):
         title_frame.pack(anchor="n", fill="x", padx=15, pady=10)
         CTkLabel(master=title_frame, text="Collections", font=("Arial Black", 30), text_color="#99BC85").pack(anchor="w", side="left")
 
+        self.new_purch_button = CTkButton(master=title_frame, text="+ New Collection", fg_color="green", hover_color="#207244", font=("Arial Bold", 12), width=100,  command=lambda: show_view("CreateNewCollection"))
+        self.new_purch_button.pack(anchor="e", side="right", padx=15)
+
         self.total = 0.0
         self.total_label = CTkLabel(master=title_frame, text=f"Total: ${self.total}", font=("Arial Black", 15), text_color="#2A8C55")
         self.total_label.pack(anchor="e", side="right", padx=(0, 20))
@@ -35,8 +37,9 @@ class CollectionView(CTkFrame):
         self.product_tabview = CollectionTabView(self)
         self.product_tabview.pack(fill="x", padx=15)
 
-        # Pack Treeview Frame
+        # Pack Treeview Frame and Compute Total
         tree_frame.pack(fill="both", expand=True, padx=15, pady=10)
+        helper.compute_coll_total(self.tk_tree, self.total_label)
 
         # Current Rows for Editing
         self.current_rows = None
@@ -67,25 +70,4 @@ class CollectionView(CTkFrame):
 
         # Update Products List in Product Tab
         # self.sales_tab_view.all_rows = sale_ctrl.get_all_sales()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
